@@ -10,7 +10,7 @@ public class MatrixBridge extends Plugin {
 	public void init() {
 		// Listen for mindustry messages
 		Events.on(PlayerChatEvent.class, event -> {
-			Call.sendMessage(String.format("[stat]%s[]: %s", event.player.name, event.message);
+			Call.sendMessage(String.format("[stat]%s[]: %s", event.player.name, event.message));
 		});
 	}
 }
