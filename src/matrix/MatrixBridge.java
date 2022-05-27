@@ -1,6 +1,6 @@
 package matrix;
 
-import arc.util.*;
+import arc.*;
 import mindustry.gen.*;
 import mindustry.game.EventType.*;
 import mindustry.mod.*;
