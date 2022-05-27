@@ -77,17 +77,22 @@ public class MatrixBridge extends Plugin {
 			case '[':
 				int len = parseMarkup(raw, i + 1);
 				switch (len) {
+				// escaped
+				case -2:
+					sb.append('[');
+					i++;
+					break;
+				// ignore
+				case -1:
+					sb.append('[');
+					break;
+				// pop colour
 				case 0:
 					opened--;
 					sb.append("</font>");
 					i++;
 					break;
-				case -1:
-					sb.append('[');
-					break;
-				case -2:
-					i++;
-					break;
+				// push colour
 				default:
 					i += len + 1;
 					opened++;
