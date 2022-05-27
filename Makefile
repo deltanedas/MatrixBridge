@@ -29,7 +29,7 @@ libs/$(1).jar:
 	@printf "\033[33m> LIB\033[0m\t%s\n" $$@
 	@mkdir -p $$(@D)
 	@curl 'https://jitpack.io/com/github/$(2)/$(3)/$(4)/$(3)-$(4).jar.sha1' -o $$@.sha1 --no-progress-meter
-	curl 'https://jitpack.io/com/github/$(2)/$(3)/$(4)/$(3)-$(4).jar' -o $$@ --no-progress-meter
+	@curl 'https://jitpack.io/com/github/$(2)/$(3)/$(4)/$(3)-$(4).jar' -o $$@ --no-progress-meter
 	@printf "\t%s" "$$@" >> $$@.sha1
 	@sha1sum -c $$@.sha1 || (rm $$@ && exit 1)
 	@rm $$@.sha1
@@ -43,11 +43,11 @@ build: MatrixBridge.jar
 build/classes/%.class: src/%.java $(libs)
 	@printf "\033[32m> JAVAC\033[0m\t%s\n" $@
 	@mkdir -p `dirname $@`
-	$(JAVAC) $(JAVACFLAGS) $< -d build/classes
+	@$(JAVAC) $(JAVACFLAGS) $< -d build/classes
 
 MatrixBridge.jar: $(classes) $(assets)
 	@printf "\033[33m> JAR\033[0m\t%s\n" $@
-	jar -cf $@ $(JARFLAGS) || rm $@
+	@jar -cf $@ $(JARFLAGS) || rm $@
 
 clean:
 	rm -rf build/classes
