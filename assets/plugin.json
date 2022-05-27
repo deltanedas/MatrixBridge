@@ -1,0 +1,8 @@
+{
+	"name": "Matrix Bridge",
+	"author": "deltanedas",
+	"main": "matrix.MatrixBridge",
+	"description": "Bridges mindustry server chat with matrix.",
+	"version": 1.0,
+	"minGameVersion": 136
+}
