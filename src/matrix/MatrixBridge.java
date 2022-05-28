@@ -2,24 +2,29 @@ package matrix;
 
 import arc.*;
 import arc.graphics.*;
+import arc.struct.*;
 import arc.util.*;
 import arc.util.serialization.*;
 import mindustry.gen.*;
 import mindustry.game.EventType.*;
+import mindustry.io.*;
 import mindustry.mod.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class MatrixBridge extends Plugin {
+	private String token, room, server, self;
 	private Color colour;
+	private String to = "";
+	private StringMap names = new StringMap();
 
 	@Override
 	public void init() {
-		try {
-			var token = readLine("matrix_token");
-			var room = readLine("matrix_room");
-			var server = readLine("matrix_server");
+		token = readLine("matrix_token");
+		room = readLine("matrix_room");
+		server = readLine("matrix_server");
+		self = readLine("matrix_user");
 
 		// Bridge mindustry -> matrix
 		Events.on(PlayerChatEvent.class, event -> {
@@ -32,12 +37,40 @@ public class MatrixBridge extends Plugin {
 			value.addChild("body", new JsonValue(Strings.stripColors(body)));
 			value.addChild("formatted_body", new JsonValue(render(body)));
 			var content = value.toJson(JsonWriter.OutputType.json);
-			String.format("{\"body\":\"%s: %s\",\"msgtype\":\"m.text\"}", event.player.name, event.message);
 			Http.post(url, content)
 				.submit(res -> {});
 		});
 
-		} catch (Exception e) {}
+		// Bridge matrix -> mindustry
+		var gaming = new Thread(() -> {
+			while (true) {
+				try {
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					Log.err(e);
+				}
+
+				var url = String.format("%s/_matrix/client/v3/rooms/%s/messages?access_token=%s&dir=b%s", server, room, token, to);
+
+				Http.get(url, res -> {
+					var jason = Jval.read(res.getResultAsString());
+					to = "&to=" + jason.getString("start");
+					Log.info("@", jason.get("chunk").asArray().size);
+					jason.get("chunk").asArray().each(event -> {
+						if (room.equals(event.getString("room_id"))) {
+							var sender = event.getString("sender");
+							if (sender != self) {
+								Call.sendMessage(String.format("[coral]<[]%s[coral]>[]: %s",
+									getDisplayName(sender),
+									event.get("content").getString("body")));
+							}
+						}
+					});
+				});
+			}
+		}, "Bridge thread");
+		gaming.setDaemon(true);
+		gaming.start();
 	}
 
 	private String readLine(String name) {
@@ -151,5 +184,20 @@ public class MatrixBridge extends Plugin {
 		}
 
 		return -1; // unclosed colour tag
+	}
+
+	private String getDisplayName(String id) {
+		var known = names.get(id);
+		if (known != null) return known;
+
+		var url = String.format("%s/_matrix/v3/profile/%s?access_token=%s", server, id, token);
+		Http.get(url, res -> {
+			var jason = Jval.read(res.getResultAsString());
+			var name = jason.getString("displayname");
+			names.put(id, (name != null) ? name : id);
+		});
+
+		// return id until display name is known
+		return id;
 	}
 }

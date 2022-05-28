@@ -15,3 +15,12 @@ Output jar will be at `matrix-bridge.jar`.
 Simply place the output jar from the step above in your server's `config/mods` directory and restart the server.
 
 List your currently installed plugins/mods by running the `mods` command.
+
+### Configuration
+Get a matrix auth token from a client's http requests and put it in `matrix_token`.
+
+Put your user id of form `@username:server` into `matrix_user`.
+
+Put the bridged room's id of form `!id:server` into `matrix_room`.
+
+Put your server of form `https://server` into `matrix_server`.
